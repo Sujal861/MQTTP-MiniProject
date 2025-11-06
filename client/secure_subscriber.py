@@ -3,20 +3,23 @@ import paho.mqtt.client as mqtt
 import hmac
 import hashlib
 import datetime
+from pathlib import Path
+import ssl
 
-# Load the shared secret key
-with open("C:/Users/subin/OneDrive/Desktop(1)/MQTT_Security_Project/shared_key.txt", "r") as f:
+# Load the shared secret key using project-relative path
+BASE_DIR = Path(__file__).resolve().parents[1]
+with open(BASE_DIR / "shared_key.txt", "r") as f:
     SHARED_KEY = f.read().strip().encode()
 
 # MQTT settings
 BROKER = "localhost"
 PORT = 8883  # TLS port
 TOPIC = "secure/topic"
-USERNAME = "subin"
-PASSWORD = "subin123"
+USERNAME = "sujal"
+PASSWORD = "sujal352"
 
 # Paths to TLS certificates
-CA_CERT_PATH = "C:/Users/subin/OneDrive/Desktop(1)/MQTT_Security_Project/broker_config/ca.crt"
+CA_CERT_PATH = str(BASE_DIR / "broker_config" / "ca.crt")
 
 # HMAC verification
 def verify_hmac(message, received_hmac):
@@ -24,7 +27,7 @@ def verify_hmac(message, received_hmac):
     return hmac.compare_digest(calculated_hmac, received_hmac), calculated_hmac
 
 # MQTT Callbacks
-def on_connect(client, userdata, flags, rc):
+def on_connect(client, userdata, flags, rc, properties=None):
     if rc == 0:
         print("📶 Connected to broker securely!")
         client.subscribe(TOPIC)
@@ -61,13 +64,14 @@ def on_message(client, userdata, msg):
 if __name__ == "__main__":
     print("📡 Waiting for messages...")
 
-    client = mqtt.Client(client_id="subclient")
+    client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2, client_id="subclient")
 
     # Authentication
     client.username_pw_set(USERNAME, PASSWORD)
 
     # TLS configuration
-    client.tls_set(ca_certs=CA_CERT_PATH)
+    client.tls_set(ca_certs=CA_CERT_PATH, cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
+    client.tls_insecure_set(True)
 
     client.on_connect = on_connect
     client.on_message = on_message

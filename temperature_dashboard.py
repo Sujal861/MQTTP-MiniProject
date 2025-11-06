@@ -10,6 +10,8 @@ import matplotlib.animation as animation
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.dates as mdates
 import datetime
+from pathlib import Path
+import ssl
 
 # MQTT Config
 BROKER = "localhost"
@@ -17,8 +19,10 @@ PORT = 8883
 TOPIC = "secure/topic"
 USERNAME = "subin"
 PASSWORD = "subin123"
-CA_CERT = "broker_config/ca.crt"
-KEY_FILE = "C:/Users/subin/OneDrive/Desktop(1)/MQTT_Security_Project/shared_key.txt"
+# Resolve paths relative to this file to avoid machine-specific absolute paths
+BASE_DIR = Path(__file__).resolve().parent
+CA_CERT = str(BASE_DIR / "broker_config/ca.crt")
+KEY_FILE = str(BASE_DIR / "shared_key.txt")
 
 with open(KEY_FILE, "r") as f:
     SHARED_KEY = f.read().strip().encode()
@@ -80,7 +84,8 @@ def mqtt_thread():
     global client
     client = mqtt.Client(client_id="dashclient", protocol=mqtt.MQTTv311)
     client.username_pw_set(USERNAME, PASSWORD)
-    client.tls_set(ca_certs=CA_CERT)
+    client.tls_set(ca_certs=CA_CERT, cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
+    client.tls_insecure_set(True)
     client.on_connect = on_connect
     client.on_message = on_message
     client.connect(BROKER, PORT, 60)

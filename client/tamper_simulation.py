@@ -1,5 +1,7 @@
 import paho.mqtt.client as mqtt
 import time
+from pathlib import Path
+import ssl
 
 # -------------------------------------------------------
 # This script simulates a tampered message sent over TLS.
@@ -14,7 +16,8 @@ PORT = 8883  # Use secure port
 TOPIC = "secure/topic"
 USERNAME = "subin"
 PASSWORD = "subin123"
-CA_CERT_PATH = "C:/Users/subin/OneDrive/Desktop(1)/MQTT_Security_Project/broker_config/ca.crt"
+BASE_DIR = Path(__file__).resolve().parents[1]
+CA_CERT_PATH = str(BASE_DIR / "broker_config" / "ca.crt")
 
 def on_connect(client, userdata, flags, rc):
     if rc == 0:
@@ -25,7 +28,8 @@ def on_connect(client, userdata, flags, rc):
 if __name__ == "__main__":
     client = mqtt.Client(client_id="tamperclient")
     client.username_pw_set(USERNAME, PASSWORD)
-    client.tls_set(ca_certs=CA_CERT_PATH)  # Secure TLS connection
+    client.tls_set(ca_certs=CA_CERT_PATH, cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)  # Secure TLS connection
+    client.tls_insecure_set(True)
     client.on_connect = on_connect
 
     client.connect(BROKER, PORT, 60)

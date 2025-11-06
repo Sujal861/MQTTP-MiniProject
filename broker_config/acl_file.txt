@@ -1,2 +1,3 @@
+# ACL File for MQTT Broker
 user subin
-topic readwrite secure/topic
+topic readwrite #

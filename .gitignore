@@ -205,3 +205,27 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ============================================
+# MQTT Security Project - Sensitive Files
+# ============================================
+
+# Certificates and Keys (NEVER commit these!)
+broker_config/*.key
+broker_config/*.crt
+broker_config/*.csr
+broker_config/*.srl
+certs/*.key
+certs/*.crt
+certs/*.csr
+
+# Shared HMAC Key
+shared_key.txt
+
+# Password Files
+broker_config/passwd_file.txt
+
+# Windows-specific
+Thumbs.db
+desktop.ini
+*.lnk

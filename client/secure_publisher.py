@@ -2,18 +2,21 @@ import paho.mqtt.client as mqtt
 import hmac
 import hashlib
 import time
+from pathlib import Path
+import ssl
 
-# Load shared key
-with open("C:/Users/subin/OneDrive/Desktop(1)/MQTT_Security_Project/shared_key.txt", "r") as f:
+# Load shared key using project-relative path
+BASE_DIR = Path(__file__).resolve().parents[1]
+with open(BASE_DIR / "shared_key.txt", "r") as f:
     SHARED_KEY = f.read().strip().encode()
 
 # MQTT settings
 BROKER = "localhost"
 PORT = 8883  # Secure port
 TOPIC = "secure/topic"
-USERNAME = "subin"
-PASSWORD = "subin123"
-CA_CERT_PATH = "C:/Users/subin/OneDrive/Desktop(1)/MQTT_Security_Project/broker_config/ca.crt"
+USERNAME = "sujal"
+PASSWORD = "sujal352"
+CA_CERT_PATH = str(BASE_DIR / "broker_config" / "ca.crt")
 
 def create_hmac(message):
     return hmac.new(SHARED_KEY, message.encode(), hashlib.sha256).hexdigest()
@@ -31,7 +34,8 @@ if __name__ == "__main__":
 
     client = mqtt.Client(client_id="pubclient")
     client.username_pw_set(USERNAME, PASSWORD)
-    client.tls_set(ca_certs=CA_CERT_PATH)  # Add TLS
+    client.tls_set(ca_certs=CA_CERT_PATH, cert_reqs=ssl.CERT_NONE, tls_version=ssl.PROTOCOL_TLSv1_2)
+    client.tls_insecure_set(True)
     client.on_connect = on_connect
     client.connect(BROKER, PORT, 60)
     client.loop_start()
